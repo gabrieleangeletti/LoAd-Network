@@ -41,8 +41,8 @@ class LoadNetwork(nn.Module):
         model = base_net["init"](pretrained=True)
         model.features = nn.Sequential(*list(model.features.children())[:-1])
 
-        model.spp_conv5 = (nn.AdaptiveMaxPool2d(output_size=s) for s in spp_conv5)
-        model.spp_mask = (nn.AdaptiveMaxPool2d(output_size=s) for s in spp_mask)
+        model.spp_conv5 = [nn.AdaptiveMaxPool2d(output_size=s) for s in spp_conv5]
+        model.spp_mask = [nn.AdaptiveMaxPool2d(output_size=s) for s in spp_mask]
 
         model.classifier = nn.Sequential(
             nn.Linear(spp_dim, base_net["fc6"]),
@@ -65,9 +65,10 @@ class LoadNetwork(nn.Module):
         img_features = self.model.features(img)
         msk_features = torch.mul(img_features, mask)
 
-        img_pooled = torch.cat((spp(img_features) for spp in self.model.spp_conv5), 2)
-        msk_pooled = torch.cat((spp(msk_features) for spp in self.model.spp_mask), 2)
+        img_pooled = torch.cat([spp(img_features) for spp in self.model.spp_conv5], 1)
+        msk_pooled = torch.cat([spp(msk_features) for spp in self.model.spp_mask], 1)
 
-        fc_input = torch.cat((img_pooled, msk_pooled), 2)
+        fc_input = torch.cat((img_pooled, msk_pooled), 1)
+        fc_input = fc_input.view(fc_input.size(0), -1)
 
         return self.model.classifier(fc_input)
