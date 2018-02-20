@@ -43,7 +43,7 @@ def main(
     model.load_state_dict(state_dict)
 
     pbar = tqdm.tqdm(loader, desc="Evaluating model", total=len(img_dataset) // batch_size)
-    running_corrects = 0
+    running_corrects, num_total = 0, 0
     for i, (input_imgs, input_maps, labels) in enumerate(pbar):
         if torch.cuda.is_available():
             input_imgs = Variable(input_imgs.cuda())
@@ -58,9 +58,10 @@ def main(
         _, preds = torch.max(outputs.data, 1)
 
         running_corrects += torch.sum(preds == labels.data)
+        num_total += preds.size(0)
 
         if i > 0 and i % 10 == 0:
-            running_acc = running_corrects / ((i + 1) * batch_size)
+            running_acc = running_corrects / num_total
             pbar.set_description("Accuracy after {:d} batches: {:.2f}".format(i + 1, running_acc * 100))
 
 
