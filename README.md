@@ -15,7 +15,8 @@ An open challenge in robot visual object recognition is the ability to generaliz
 ![LoAd network](https://i.imgur.com/sKDqDFu.png)
 
 ### Usage
-Todo
+#### Run the demo to reproduce the paper results:
+    ./run.py --help
 
 ### License:
 MIT
